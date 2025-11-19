@@ -29,28 +29,17 @@
 
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fadeIn {
   animation: fadeIn 0.3s ease-out forwards;
 }
 
-
 @keyframes slideIn {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0);
-  }
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
 }
 
 .animate-slideIn {
@@ -58,16 +47,23 @@
 }
 
 
-.dot-grid-pattern {
-  background-image: radial-gradient(circle, #333 1px, transparent 1px);
-  background-size: 24px 24px;
-  background-position: 0 0;
+@keyframes slideDown {
+  from { 
+    opacity: 0;
+    transform: translateY(-10px);
+    max-height: 0;
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 500px;
+  }
 }
 
-.dot-grid-pattern-light {
-  background-image: radial-gradient(circle, #e5e5e5 1px, transparent 1px);
-  background-size: 24px 24px;
-  background-position: 0 0;
+.animate-slideDown {
+  animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  transform-origin: top center;
+  overflow: hidden;
 }
 
 
@@ -84,27 +80,6 @@
 }
 
 
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-.animate-pulse-slow {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-
-* {
-  transition-property: background-color, border-color, color;
-  transition-duration: 200ms;
-  transition-timing-function: ease-in-out;
-}
-
-
 *:focus-visible {
   outline: 2px solid #3b82f6;
   outline-offset: 2px;
@@ -113,7 +88,6 @@
 *:focus:not(:focus-visible) {
   outline: none;
 }
-
 
 ::selection {
   background-color: #3b82f6;
@@ -125,11 +99,11 @@ button {
   -webkit-user-select: none;
 }
 
-
 textarea {
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
+  ring: 0 !important;
 }
 
 textarea:focus {
@@ -143,9 +117,9 @@ html {
   scroll-behavior: smooth;
 }
 
-
 body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
