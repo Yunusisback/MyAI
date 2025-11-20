@@ -1,9 +1,8 @@
 const API_KEY = import.meta.env.VITE_GROQ_API_KEY;
 const API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
-
-
-export async function sendMessage(messages, modelName, onStreamChunk, onStreamEnd) {
+// signal parametresi eklendi
+export async function sendMessage(messages, modelName, onStreamChunk, onStreamEnd, signal) {
     try {
         const response = await fetch(API_URL, {
             method: 'POST',
@@ -16,13 +15,13 @@ export async function sendMessage(messages, modelName, onStreamChunk, onStreamEn
                 messages: messages,
                 temperature: 0.7,
                 max_tokens: 1024,
-                stream: true // akış modu aktif
-            })
+                stream: true 
+            }),
+            signal: signal // İsteği iptal etmek için gerekli sinyal
         });
 
         if (!response.ok) {
             const errorData = await response.json();
-            console.error('API Error:', errorData);
             throw new Error(errorData.error?.message || 'API isteği başarısız');
         }
 
@@ -32,7 +31,7 @@ export async function sendMessage(messages, modelName, onStreamChunk, onStreamEn
         while (true) {
             const { done, value } = await reader.read();
             if (done) {
-                onStreamEnd(); // akış bitti
+                onStreamEnd(); 
                 break;
             }
 
@@ -48,7 +47,7 @@ export async function sendMessage(messages, modelName, onStreamChunk, onStreamEn
                         const data = JSON.parse(dataStr);
                         const token = data.choices[0]?.delta?.content;
                         if (token) {
-                            onStreamChunk(token); // yeni tokenı bileşene gönder
+                            onStreamChunk(token); 
                         }
                     } catch (e) {
                         console.error('Stream parse error:', e);
@@ -57,7 +56,12 @@ export async function sendMessage(messages, modelName, onStreamChunk, onStreamEn
             }
         }
     } catch (error) {
+        // Kullanıcı durdurduysa sessizce çık
+        if (error.name === 'AbortError') {
+            console.log('İşlem kullanıcı tarafından durduruldu.');
+            return; 
+        }
         console.error('API Hatası:', error);
-        throw error; // hatayı üst bileşene ilet
+        throw error; 
     }
 }

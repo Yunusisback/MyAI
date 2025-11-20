@@ -1,7 +1,7 @@
-import { ArrowUp, Paperclip, Mic } from 'lucide-react';
+import { ArrowUp, Paperclip, Mic, Square } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 
-export default function ChatInput({ input, setInput, onSend, loading, darkMode, selectedModel, placeholderText }) {
+export default function ChatInput({ input, setInput, onSend, onStop, loading, darkMode, selectedModel, placeholderText }) {
   const [isFocused, setIsFocused] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const textareaRef = useRef(null);
@@ -9,11 +9,10 @@ export default function ChatInput({ input, setInput, onSend, loading, darkMode, 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      onSend();
+      if (!loading) onSend();
     }
   };
   
-  // Otomatik yükseklik ayarlama
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -31,23 +30,14 @@ export default function ChatInput({ input, setInput, onSend, loading, darkMode, 
       recognition.continuous = false;
       recognition.interimResults = false;
 
-      recognition.onstart = () => {
-        setIsRecording(true);
-      };
-
+      recognition.onstart = () => setIsRecording(true);
       recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
         setInput(transcript);
         setIsRecording(false);
       };
-
-      recognition.onerror = () => {
-        setIsRecording(false);
-      };
-
-      recognition.onend = () => {
-        setIsRecording(false);
-      };
+      recognition.onerror = () => setIsRecording(false);
+      recognition.onend = () => setIsRecording(false);
 
       recognition.start();
     } else {
@@ -63,36 +53,28 @@ export default function ChatInput({ input, setInput, onSend, loading, darkMode, 
     >
       <div className="max-w-4xl mx-auto p-4 sm:p-6">
         <div
-          className={`relative flex items-center gap-2 rounded-2xl border px-2 py-2 
-            /* ÖNEMLİ: Animasyon Ayarları */
-            transition-all duration-500 ease-out
+          className={`relative flex items-center gap-2 rounded-2xl  px-3 py-3
+            transition-all duration-300 ease-out
             ${
             darkMode 
-              /* Dark Mode Durumu */
               ? isFocused 
-                ? 'bg-white/10 border-white/20 shadow-[0_0_30px_-5px_rgba(255,255,255,0.15)] translate-y-[-2px]' 
-                : 'bg-white/5 border-white/5 shadow-none translate-y-0' 
-              
-              /* Light Mode Durumu */
+                ? 'bg-black border-white 500/50 shadow-[0_0_40px_-10px_rgba(255,255,246,2.9)] -translate-y-0.5' 
+                : 'bg-[#1a1a1a] border-white/5 shadow-none translate-y-0 hover:border-white/10' 
               : isFocused
-                /* GÜNCELLEME BURADA: Hafif Siyah Gölge (0.1 Opacity) */
-                ? 'bg-white border-black/20 shadow-[0_0_30px_-10px_rgba(0,0,0,0.1)] translate-y-[-2px]' 
-                : 'bg-black/5 border-black/5 shadow-none translate-y-0'
+                ? 'bg-white border-bl-500/30 shadow-[0_0_40px_-10px_rgba(60,60,60,4.9)] -translate-y-0.5'
+                : 'bg-white border-zinc-200 shadow-sm translate-y-0 hover:border-zinc-300'
           }`}
         >
-          {/* Ataç Butonu */}
           <button
             type="button"
             className={`p-2 rounded-lg transition-colors shrink-0 ${
               darkMode ? 'hover:bg-white/10 text-white/50 hover:text-white' : 'hover:bg-black/10 text-black/50 hover:text-black'
             }`}
             onClick={() => alert('Dosya yükleme özelliği yakında!')}
-            aria-label="Dosya ekle"
           >
             <Paperclip className="w-5 h-5" />
           </button>
 
-          {/* Textarea */}
           <textarea
             ref={textareaRef}
             rows={1}
@@ -109,7 +91,6 @@ export default function ChatInput({ input, setInput, onSend, loading, darkMode, 
             style={{ boxShadow: 'none' }}
           />
 
-          {/* Ses butonu */}
           <button
             type="button"
             onClick={handleVoiceInput}
@@ -121,37 +102,40 @@ export default function ChatInput({ input, setInput, onSend, loading, darkMode, 
                   ? 'hover:bg-white/10 text-white/50 hover:text-white' 
                   : 'hover:bg-black/10 text-black/50 hover:text-black'
             } disabled:opacity-50`}
-            aria-label="Sesli mesaj"
-            title={isRecording ? 'Dinleniyor...' : 'Sesli mesaj'}
           >
             <Mic className="w-5 h-5" />
           </button>
 
-          {/* Gönder Butonu */}
-          <button
-            type="button"
-            onClick={onSend}
-            disabled={!input.trim() || loading}
-            className={`p-2 rounded-lg transition-all duration-300 flex items-center justify-center shrink-0 ${
-              !input.trim() || loading
-                ? 'opacity-30 cursor-not-allowed'
-                : darkMode 
-                  ? 'bg-white text-black hover:bg-white/90 hover:scale-105' 
-                  : 'bg-black text-white hover:bg-black/90 hover:scale-105'
-            }`}
-            aria-label="Mesaj gönder"
-          >
-            {loading ? (
-              <div className={`w-5 h-5 border-2 border-t-transparent rounded-full animate-spin ${
-                darkMode ? 'border-black' : 'border-white'
-              }`} />
-            ) : (
+          {loading ? (
+             <button
+                type="button"
+                onClick={onStop}
+                className={`p-2 rounded-lg transition-all duration-300 flex items-center justify-center shrink-0 ${
+                  darkMode ? 'bg-white text-black hover:bg-white/90' : 'bg-black text-white hover:bg-black/90'
+                }`}
+             >
+               <div className="animate-pulse">
+                 <Square className="w-5 h-5 fill-current" />
+               </div>
+             </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onSend}
+              disabled={!input.trim()}
+              className={`p-2 rounded-lg transition-all duration-300 flex items-center justify-center shrink-0 ${
+                !input.trim()
+                  ? 'opacity-30 cursor-default'
+                  : darkMode 
+                    ? 'bg-white text-black hover:bg-white/90 hover:scale-105' 
+                    : 'bg-black text-white hover:bg-black/90 hover:scale-105'
+              }`}
+            >
               <ArrowUp className="w-5 h-5" />
-            )}
-          </button>
+            </button>
+          )}
         </div>
         
-        {/* Alt bilgi */}
         <p className={`text-xs text-center mt-3 transition-colors duration-500 ${
           darkMode ? 'text-white/20' : 'text-black/20'
         }`}>
