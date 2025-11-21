@@ -1,10 +1,19 @@
-import { User, Copy, Check, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { User, Copy, Check, ThumbsUp, ThumbsDown, RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus, vs } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import Lottie from 'lottie-react';
 import logoAnimation from '../assets/logo-animation.json';
+
+// yazıyor typing animasyonu
+const TypingIndicator = ({ darkMode }) => (
+  <div className={`flex items-center gap-1 p-2 h-6 mt-1`}>
+    <div className={`w-1.5 h-1.5 rounded-full typing-dot ${darkMode ? 'bg-zinc-400' : 'bg-zinc-500'}`}></div>
+    <div className={`w-1.5 h-1.5 rounded-full typing-dot ${darkMode ? 'bg-zinc-400' : 'bg-zinc-500'}`}></div>
+    <div className={`w-1.5 h-1.5 rounded-full typing-dot ${darkMode ? 'bg-zinc-400' : 'bg-zinc-500'}`}></div>
+  </div>
+);
 
 export default function ChatMessage({ message, role, darkMode }) {
   const isUser = role === 'user';
@@ -24,132 +33,170 @@ export default function ChatMessage({ message, role, darkMode }) {
 
   return (
     <div
-      className={`flex gap-5 w-full group ${isUser ? 'flex-row-reverse' : ''} items-start`}
+      className={`flex gap-4 sm:gap-6 w-full group ${isUser ? 'flex-row-reverse' : ''} items-start`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Avatar Alanı */}
+      {/* avatar */}
       <div
         className={`
           shrink-0 flex items-center justify-center rounded-full mt-1
-          w-10 h-10 
-          ${!isUser ? '-ml-3' : ''}
+          w-9 h-9 sm:w-10 sm:h-10
+          ${!isUser ? '-ml-2' : ''}
           ${
             isUser 
-              ? (darkMode ? 'bg-white text-black shadow-sm' : 'bg-black text-white shadow-sm')
+              ? (darkMode ? 'bg-transparent text-white' : 'bg-transparent text-zinc-900')
               : 'bg-transparent overflow-visible' 
           }
         `}
       >
         {isUser ? (
-          <User className="w-5 h-5" />
+          // Kullanıcı Avatarı (Sadece İkon)
+          <div className={`p-1.5 rounded-md ${darkMode ? 'bg-zinc-800' : 'bg-zinc-200'}`}>
+             <User className="w-5 h-5" strokeWidth={2} />
+          </div>
         ) : (
-          /* AI Animasyonu */
+          // AI Animasyonu
           <div className="w-full h-full flex items-center justify-center">
              <Lottie 
                animationData={logoAnimation} 
                loop={true}
-               className="scale-[1.5]" 
+               className="scale-[1.6]" 
              />
           </div>
         )}
       </div>
 
-      {/* Mesaj İçeriği */}
+      {/* mesaj içeriği*/}
       <div className={`
-        flex-1 max-w-[75%] sm:max-w-lg relative 
+        flex-1 max-w-[85%] sm:max-w-3xl relative 
         ${isUser ? 'flex justify-end' : ''}
-        mt-8
+        mt-2
       `}>
+     
         <div
-          className={`px-5 py-3.5 transition-all shadow-sm ${
+          className={`px-1 sm:px-5 py-1 sm:py-2 transition-all ${
             isUser
-              /* KULLANICI MESAJI */
-              ? darkMode 
-                ? 'bg-white/5 backdrop-blur-md border border-white/10 text-white rounded-2xl rounded-tr-sm' 
-                : 'bg-zinc-100 border border-zinc-200 text-zinc-900 rounded-2xl rounded-tr-sm'
-              
-              /* AI MESAJI  */
-              : darkMode
-                ? 'bg-white/5 backdrop-blur-md border border-white/5 text-zinc-100 rounded-2xl rounded-tl-sm' 
-                : 'bg-white/60 backdrop-blur-md border border-zinc-200 text-zinc-900 rounded-2xl rounded-tl-sm' 
+              ? (darkMode ? 'text-zinc-100' : 'text-zinc-900')
+              : 'text-transparent'
           }`}
         >
-          <div className={`prose prose-sm max-w-none leading-7 ${
-            darkMode ? 'prose-invert' : 'prose-zinc'
-          }`}>
-            <ReactMarkdown
-              components={{
-                a: ({ ...props }) => (
-                  <a {...props} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" />
-                ),
-                code({ inline, className, children, ...props }) {
-                  const match = /language-(\w+)/.exec(className || '');
-                  const language = match ? match[1] : 'text';
-                  
-                  return !inline && match ? (
-                    <div className={`my-4 rounded-lg overflow-hidden border shadow-sm ${
-                        darkMode ? 'border-white/10' : 'border-zinc-200'
-                    }`}>
-                      <div className={`flex items-center justify-between px-4 py-2 text-xs font-mono ${
-                        darkMode ? 'bg-[#1e1e1e] text-zinc-400 border-b border-white/5' : 'bg-zinc-100 text-zinc-500 border-b border-zinc-200'
-                      }`}>
-                        <span>{language}</span>
-                        <button
-                          onClick={() => copyToClipboard(String(children))}
-                          className="flex items-center gap-1 hover:text-blue-500 transition-colors"
-                        >
-                          {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                          {copied ? 'Kopyalandı' : 'Kopyala'}
-                        </button>
-                      </div>
-                      <SyntaxHighlighter
-                        style={darkMode ? vscDarkPlus : vs}
-                        language={language}
-                        PreTag="div"
-                        customStyle={{ margin: 0, borderRadius: 0, fontSize: '13px' }}
-                        {...props}
-                      >
-                        {String(children).replace(/\n$/, '')}
-                      </SyntaxHighlighter>
-                    </div>
-                  ) : (
-                    <code 
-                      className={`px-1.5 py-0.5 rounded-md text-[13px] font-mono ${
-                        darkMode ? 'bg-white/10 text-white' : 'bg-zinc-100 text-red-600 border border-zinc-200'
-                      }`} 
-                      {...props}
-                    >
-                      {children}
-                    </code>
-                  );
-                }
-              }}
-            >
-              {message}
-            </ReactMarkdown>
-          </div>
-
-          {/* Aksiyon Butonları */}
-          {!isUser && (
-            <div className={`flex items-center gap-2 mt-2 transition-opacity duration-200 ${
-              isHovered ? 'opacity-100' : 'opacity-0'
+          
+          {/* Loading Kontrolü */}
+          {!isUser && !message ? (
+             <TypingIndicator darkMode={darkMode} />
+          ) : (
+            <div className={`prose prose-sm sm:prose-base max-w-none leading-7 wrap-break-words ${
+                darkMode ? 'prose-invert text-zinc-300' : 'prose-zinc text-zinc-800'
             }`}>
-              <button onClick={() => copyToClipboard(message)} className={`p-1.5 rounded transition-colors ${
-                darkMode ? 'hover:bg-white/10 text-zinc-400 hover:text-zinc-200' : 'hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600'
+                <ReactMarkdown
+                components={{
+                    a: ({ ...props }) => (
+                        <a {...props} className="text-blue-500 hover:underline font-medium" target="_blank" rel="noopener noreferrer" />
+                    ),
+                    table: ({children}) => (
+                        <div className="overflow-x-auto my-4 rounded-lg border border-opacity-50 border-gray-700">
+                            <table className="min-w-full divide-y divide-gray-700">{children}</table>
+                        </div>
+                    ),
+                    code({ inline, className, children, ...props }) {
+                        const match = /language-(\w+)/.exec(className || '');
+                        const language = match ? match[1] : 'text';
+                        const codeString = String(children).replace(/\n$/, '');
+                        
+                        return !inline && match ? (
+                        <div className={`my-6 rounded-xl overflow-hidden border shadow-md ${
+                            darkMode ? 'border-white/10 bg-[#1e1e1e]' : 'border-zinc-200 bg-zinc-50'
+                        }`}>
+                            <div className={`flex items-center justify-between px-4 py-2.5 ${
+                            darkMode ? 'bg-[#2d2d2d] border-b border-white/5' : 'bg-zinc-100 border-b border-zinc-200'
+                            }`}>
+                            <div className="flex items-center gap-2">
+                                <div className="flex gap-1.5">
+                                    <div className="w-3 h-3 rounded-full bg-red-500/80" />
+                                    <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+                                    <div className="w-3 h-3 rounded-full bg-green-500/80" />
+                                </div>
+                                <span className={`ml-3 text-xs font-mono font-medium ${darkMode ? 'text-zinc-400' : 'text-zinc-500'}`}>
+                                    {language}
+                                </span>
+                            </div>
+
+                            <button
+                                onClick={() => copyToClipboard(codeString)}
+                                className={`flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded transition-colors ${
+                                darkMode 
+                                    ? 'text-zinc-400 hover:text-white hover:bg-white/10' 
+                                    : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-200'
+                                }`}
+                            >
+                                {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                                {copied ? 'Kopyalandı' : 'Kopyala'}
+                            </button>
+                            </div>
+
+                            <div className="text-[13px] sm:text-sm font-mono">
+                            <SyntaxHighlighter
+                                style={darkMode ? vscDarkPlus : vs}
+                                language={language}
+                                PreTag="div"
+                                customStyle={{ 
+                                    margin: 0, 
+                                    borderRadius: 0, 
+                                    padding: '1.5rem',
+                                    background: 'transparent' 
+                                }}
+                                {...props}
+                            >
+                                {codeString}
+                            </SyntaxHighlighter>
+                            </div>
+                        </div>
+                        ) : (
+                        <code 
+                            className={`px-1.5 py-0.5 rounded-md text-[0.9em] font-mono font-medium ${
+                            darkMode ? 'bg-white/10 text-zinc-200' : 'bg-zinc-100 text-pink-600 border border-zinc-200'
+                            }`} 
+                            {...props}
+                        >
+                            {children}
+                        </code>
+                        );
+                    }
+                }}
+                >
+                {message}
+                </ReactMarkdown>
+            </div>
+          )}
+
+          {/* aksiyon butonları */}
+          {!isUser && message && (
+            <div className={`flex items-center gap-1 mt-2 -ml-2 transition-opacity duration-300 ${
+              isHovered || copied ? 'opacity-100' : 'opacity-0'
+            }`}>
+              <button onClick={() => copyToClipboard(message)} className={`p-1.5 rounded-md transition-colors ${
+                darkMode ? 'hover:bg-white/10 text-zinc-500 hover:text-zinc-300' : 'hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600'
               }`} title="Kopyala">
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               </button>
-              <div className={`h-3 w-px mx-1 ${darkMode ? 'bg-white/10' : 'bg-zinc-200'}`} />
-              <button onClick={() => handleReaction('up')} className={`p-1.5 rounded transition-colors ${
+              
+              <button onClick={() => handleReaction('up')} className={`p-1.5 rounded-md transition-colors ${
                  darkMode ? 'hover:bg-white/10' : 'hover:bg-zinc-100'
-              } ${reaction === 'up' ? 'text-green-500' : 'text-zinc-400'}`}>
+              } ${reaction === 'up' ? 'text-green-500 bg-green-500/10' : 'text-zinc-500 hover:text-zinc-300'}`}>
                 <ThumbsUp className="w-4 h-4" />
               </button>
-              <button onClick={() => handleReaction('down')} className={`p-1.5 rounded transition-colors ${
+              
+              <button onClick={() => handleReaction('down')} className={`p-1.5 rounded-md transition-colors ${
                  darkMode ? 'hover:bg-white/10' : 'hover:bg-zinc-100'
-              } ${reaction === 'down' ? 'text-red-500' : 'text-zinc-400'}`}>
+              } ${reaction === 'down' ? 'text-red-500 bg-red-500/10' : 'text-zinc-500 hover:text-zinc-300'}`}>
                 <ThumbsDown className="w-4 h-4" />
+              </button>
+
+               <button className={`p-1.5 rounded-md transition-colors ${
+                darkMode ? 'hover:bg-white/10 text-zinc-500 hover:text-zinc-300' : 'hover:bg-zinc-100 text-zinc-400 hover:text-zinc-600'
+              }`} title="Yeniden Oluştur">
+                <RefreshCw className="w-4 h-4" />
               </button>
             </div>
           )}

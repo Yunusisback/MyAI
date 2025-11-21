@@ -58,7 +58,7 @@ export default function Header({
           {/*  Tarih Göstergesi */}
           <div className={`
              flex items-center text-sm sm:text-base font-medium tracking-wide select-none transition-all duration-300 ease-in-out
-             ${showSidebar ? 'lg:ml-[290px]' : ''} 
+             ${showSidebar ? 'lg:ml-[10px]' : ''} 
              ${!showSidebar ? `ml-2 pl-3 border-l ${darkMode ? 'border-white/10' : 'border-zinc-300'}` : ''}
              ${darkMode ? 'text-gray-300' : 'text-gray-600'}
           `}>

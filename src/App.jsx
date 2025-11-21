@@ -138,8 +138,9 @@ function App() {
     const blob = new Blob([text], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
+    const fileName = chats.find(c => c.id === activeChatId)?.title || 'chat';
     a.href = url;
-    a.download = `chat-${Date.now()}.txt`;
+    a.download = `${fileName}-${Date.now()}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -248,7 +249,12 @@ function App() {
         username={username}
       />
 
-      <div className="flex-1 flex flex-col min-w-0 relative">
+  
+      <div className={`
+        flex-1 flex flex-col min-w-0 relative
+        transition-all duration-300 ease-in-out
+        ${showSidebar ? 'lg:ml-[280px]' : 'lg:ml-0'}
+      `}>
         <Header
           showSidebar={showSidebar}
           setShowSidebar={setShowSidebar}
