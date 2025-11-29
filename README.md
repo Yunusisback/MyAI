@@ -6,7 +6,6 @@ A next-generation AI chat interface built with **React 19** and **Tailwind CSS v
 
 
 
-
 ## ✨ Design & UI Features
 
 Maximum emphasis on visual details and interaction feel:
